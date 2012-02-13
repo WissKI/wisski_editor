@@ -1,0 +1,69 @@
+.mceIframeContainer {
+  background-color:#F0F0EE !important;
+}
+
+
+#edit-body_ifr {
+	float:left;
+}
+
+#menu_edit-body_annolist .mceIcon {display:none;}
+#menu_edit-body_annolist.defaultSkin .mceMenu .mceText {
+	padding: 0;
+	display:inline;
+}
+
+#menu_edit-body_annolist.defaultSkin .mceMenu td {
+  padding-left: 20px;
+}
+
+#menu_edit-body_annolist.defaultSkin .mceMenu {
+	background-color:#F0F0EE;
+	border:none;
+	width:35%;
+}
+
+#menu_edit-body_annolist.defaultSkin .mceMenu table {
+	background-color:#F0F0EE;
+}
+
+#menu_edit-body_annolist.defaultSkin .mceMenu a {
+/*	line-height: 20px;*/
+}
+
+#menu_edit-body_annolist.defaultSkin .mceMenu td.lfirst {
+	background-image: url(../img/delete.png);
+	background-repeat: no-repeat;
+	background-position: 4px center;
+}
+
+#menu_edit-body_annolist.defaultSkin .mceMenuItemDisabled .header .mceText {
+	font-weight: bold;
+	color: #333333;
+}
+
+#menu_edit-body_annolist.defaultSkin tr.mceLast td {
+	border-bottom:none;
+}
+
+#menu_edit-body_annolist.defaultSkin tr.mceFirst td {
+	border-top:none;
+}
+
+.defaultSkin span.mceButtonLabel {
+	padding:0 6px;
+}
+
+.defaultSkin .mceButtonLabeled span.mceIcon {
+	display:none;
+}
+
+.defaultSkin .mceMenu td.aktiv {border:1px solid #0A246A;}
+
+.defaultSkin table.mceLayout tr.mceLast div.mceDropDown td {
+	border-bottom:none;
+}
+
+.defaultSkin a.mceButtonActive, .defaultSkin a.mceButtonSelected, .defaultSkin a.mceButtonEnabled:hover {
+	overflow:hidden;
+}

@@ -1,0 +1,35 @@
+/* Template for editor css style features
+* that are independent from a certain type
+*/
+
+
+body.mceContentBody {background-color: #ffffff;}
+
+
+/* % COLOR % will be replaced by the default color for annotations
+*/
+
+/* Approved annotation in the text */
+span.wisski_anno_user {
+  color: %COLOR%;
+}
+
+/* Proposed annotation in the text */
+span.wisski_anno {
+  color: %COLOR%;
+}
+
+span.wisski_anno span[title] {
+  cursor: help;
+}
+
+/* WissKI menu and context menu */
+.defaultSkin .mceMenu td.wisski_anno {
+  color: %COLOR%;
+  padding-left: 20px;
+}
+.defaultSkin .mceMenuItem td.wisski_anno span {
+  color: %COLOR%;
+}
+
+

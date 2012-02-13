@@ -1,0 +1,577 @@
+<?php
+// $Id$
+
+/**
+* @author Martin Scholz
+*/
+function wisski_editor_perm() {
+  return array('wisski use editor');
+}
+
+
+
+/**
+* @author Martin Scholz
+*/
+function wisski_editor_menu() {
+  $menu = array();
+
+  // settings menu
+  $menu['admin/settings/wisski/editor'] = array (
+    'title' => 'Editor',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wisski_editor_admin_settings'),
+    'type'     => MENU_LOCAL_TASK,
+    'access arguments' => array('wisski administrate page'),
+    'file' => 'wisski_editor.admin.inc',
+  );
+
+  // annotation web services
+  $menu['wisski/editor/suggest'] = array (
+    'title' => '',
+    'page callback' => 'wisski_editor_ws_suggest',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('wisski use editor'),
+    'file' => 'wisski_editor.ws.inc',
+  );
+  $menu['wisski/editor/about'] = array (
+    'title' => '',
+    'page callback' => 'wisski_editor_ws_about',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('wisski use editor'),
+    'file' => 'wisski_editor.ws.inc',
+  );
+  $menu['wisski/editor/analyse'] = array (
+    'title' => '',
+    'page callback' => 'wisski_editor_ws_analyse',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('wisski use editor'),
+    'file' => 'wisski_editor.ws.inc',
+  );
+
+  // editor appearance and save
+    $menu['node/%/rdfa_store'] = array (
+    'title' => '',
+    'page callback' => 'wisski_editor_rdfaStore',
+    'page arguments' => array(1),
+    'type'     => MENU_CALLBACK,
+    'access arguments' => array('wisski administrate page'),
+  );
+  $menu['node/%/rdfa_triples'] = array (
+    'title' => '',
+    'page callback' => 'wisski_editor_rdfaTriples',
+    'page arguments' => array(1),
+    'type'     => MENU_CALLBACK,
+    'access arguments' => array('wisski use editor'),
+  );
+  $menu['node/%node/rdfa_insert/force'] = array (
+    'title' => 'Store triples',
+    'page callback' => 'wisski_editor_storeTriples',
+    'page arguments' => array(1, TRUE),
+    'type'     => MENU_CALLBACK,
+    'access arguments' => array('wisski use editor'),
+  );
+  $menu['node/%node/rdfa_insert'] = array (
+    'title' => 'Store triples',
+    'page callback' => 'wisski_editor_storeTriples',
+    'page arguments' => array(1),
+    'type'     => MENU_CALLBACK,
+    'access arguments' => array('wisski use editor'),
+  );
+  $menu['node/add/individual/annotext'] = array (
+    'title' => 'Create annotated text',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wisski_editor_freeText', NULL, NULL),
+    'type'     => MENU_NORMAL_ITEM,
+    'access arguments' => array('wisski use editor'),
+  );
+  $menu['node/add/individual/annotext/%'] = array (
+    'title' => 'Create annotated text',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wisski_editor_freeText', NULL, 4),
+    'type'     => MENU_NORMAL_ITEM,
+    'access arguments' => array('wisski use editor'),
+  );
+  $menu['node/%node/annotext'] = array (
+    'title' => 'Create annotated text',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wisski_editor_freeText', 1, NULL),
+    'type'     => MENU_CALLBACK,
+    'access arguments' => array('wisski use editor'),
+  );
+  $menu['node/%node/textrevisions'] = array (
+    'title' => 'Text Revisions',
+    'page callback' => '_wisski_editor_revisions',
+    'page arguments' => array(1),
+    'type'     => MENU_LOCAL_TASK,
+    'access callback' => '_wisski_editor_access_revisions',
+    'access arguments' => array(1),
+  );
+
+
+  return $menu;
+}
+
+
+/** Build the ontology array (= list of groups) for the editor
+*
+* @return an array containing key 'classes' with an array of classes and
+* key 'properties' with an array of properties.
+*
+* The classes array contains key value pairs as follows:
+* <class id> => <array describing the class>
+* A class description contains the keys
+* - id: class id == the group id
+* - label: class label == the group name
+* - uri: the class uri == x0 of path array
+* - domain_for: array of property ids
+* - range_for: array of property ids
+* - parent: the parent class (optional)
+*
+* The properties array contains key value pairs as follows:
+* <property id> => <array describing the property>
+* A property description contains the keys
+* - id: property id == the path id
+* - label: property label == the path name
+* - domain: a class id
+* - range: array of class ids
+* 
+* The classes and propeties are derived from the path/group definitions.
+* Top groups always map to top lvel classes.
+* Paths will always map to properties.
+* There are two modes to treat subgroup definitions:
+* If $subgroups_as_events is FALSE, the subgroups will be omitted. Properties
+* will only go from top group to top group.
+* If $subgroups_as_events is TRUE, the subgroups will map to subclasses of
+* their top group pendants. Paths will go from top group/class to either
+* top group/class or subgroup/subclass. The subgroup will also map to a
+* property going from the top group/class to the subgroup/subclass.
+*
+* @author Martin Scholz
+*/
+function wisski_editor_build_ontology() {
+  include_once('wisski_editor.inc');
+  return _wisski_editor_build_ontology();
+}
+
+
+/** Build the vocabularies array for the editor
+* @return an array of the form <voc id> => <voc description> where the value
+* is an array containing keys:
+* - vid: the vocabulary id
+* - name: its name
+* - priority: a ranking on the vocabs
+* - class: the ontology class associated with that vocab
+*
+* @author Martin Scholz
+*/
+function wisski_editor_build_vocabularies() {
+
+  // gather vocabularies
+  $vocs = array();
+  foreach (wisski_vocab_ctrl_get() as $voc) {
+    $vocs[$voc->vid] = array(
+        'vid' => $voc->vid,
+        'name' => $voc->name,
+        'priority' => $voc->priority,
+        'class' => $voc->group_id,  // the groups are ontology classes for the editor
+        );
+  }
+  
+  return $vocs;
+
+};
+
+
+/**
+* Checks if access to text revisions should be granted
+*
+* @author Martin Scholz
+*/
+function _wisski_editor_access_revisions ($node) {
+  // only affects individual nodes
+  if ($node->type !== 'individual') return FALSE;
+  // get the text for that object
+  drupal_load('module', 'wisski_store');
+  $uri = wisski_store_getObj()->wisski_ARCAdapter_delNamespace($node->title);
+  drupal_load('module', 'wisski_textproc');
+  $texturis = wisski_textproc_get_texts($uri);
+  // if there is no text, don't show tab
+  if (!$texturis) return FALSE;
+  // get node id for text
+  global $base_root, $base_path;
+  $tnodeuri = drupal_lookup_path('source', str_replace($base_root . $base_path, "", $texturis[0]));
+  if (!empty($tnodeuri)) {
+    // load text node
+    $tnode = node_load(arg(1,$tnodeuri));
+    // test if user has rights to access revisions
+    // and if revisions exist 
+    // use standard method for that
+    return _node_revision_access($tnode);
+  } else {
+    // can't determine text node id
+    return FALSE;
+  }
+}
+
+/** Menu callback that for an instance node redirects
+* to the revisions tab of the corresponding text node
+*
+* @author Martin Scholz
+*/
+function _wisski_editor_revisions($node) {
+  global $base_root, $base_path;
+  $uri = wisski_store_getObj()->wisski_ARCAdapter_delNamespace($node->title);
+  $text_uri = wisski_textproc_get_texts($uri);
+  $text_uri = drupal_lookup_path('source', str_replace($base_root . $base_path, "", $text_uri[0]));
+  drupal_goto($text_uri . '/revisions');
+}
+
+
+/** Implemenation of hook_nodeapi
+*
+* This is only effective in case we use doc graphs to store
+* the triples: This hook will trigger the doc graph contents to
+* be deleted if the node is deleted.
+*
+* @author Martin Scholz
+*/
+function wisski_editor_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+
+  if ($op !== 'delete') return;
+  if (!variable_get('wisski_editor_use_doc_graphs', FALSE)) return;
+
+  // we only care about individual nodes
+  if ($node->type !== 'individual') return;
+  
+  // we dont care whether it is a text node,
+  // since other nodes dont have graphs
+  $uri = wisski_store_getObj()->wisski_ARCAdapter_delNamespace($node->title);
+  $store = wisski_store_getObj()->wisski_ARCAdapter_getStore();
+  $store->query("DELETE FROM <$uri>");
+  if ($store->getErrors()) {
+    foreach ($store->getErrors() as $err) drupal_set_message($err);
+  }
+
+}
+
+
+
+/**
+* Implementation of hook_init().
+* Add CSS and Javascript files
+* Add settings to Drupal DOM object
+*
+* @author Martin Scholz
+*/
+function wisski_editor_init() {
+
+  global $base_root, $base_path;
+  $path = drupal_get_path('module', 'wisski_editor');
+  $css_file = variable_get('wisski_editor_css_file', NULL);
+  if (!empty($css_file)) drupal_add_css($css_file, 'theme');
+  // does not work, only D7! :(  drupal_add_css($base_root . $base_path . 'wisski/editor/editor.css');  // new: generate the css file on demand; this avoids writing the file on the filesystem
+  drupal_add_css($path . '/tooltip_plugin/css/ttip.css');
+ 
+  drupal_add_js($path . '/tooltip_plugin/lib/jquery.qtip.js');
+  drupal_add_js($path . '/tooltip_plugin/tooltips.js', 'module');
+  
+  drupal_add_js(
+      array(
+          'wisski' => array(
+              'editor' => array(
+                  'place_classes' => variable_get('wisski_editor_place_groups', array()),
+                  'ontology' => wisski_editor_build_ontology(),
+                  'vocabularies' => wisski_editor_build_vocabularies(),
+                  'about_url' => $base_root . $base_path . 'wisski/editor/about',
+                  'suggest_url' => $base_root . $base_path . 'wisski/editor/suggest',
+                  ),
+              ),
+          ),
+      'setting');
+}
+
+
+/**
+* Implementation of hook_wysiwyg_plugin().
+*
+* @author Martin Scholz
+*/
+function wisski_editor_wysiwyg_plugin($editor, $version) {
+  include_once(dirname(__FILE__) . '/wisski_editor.inc');
+  return _wisski_editor_wysiwyg_plugin($editor, $version);
+}
+
+
+/** Form for inserting/editing free text with the editor
+*
+* The form uses a special input format that must be specified
+* The form considers three arguments that define, how the text (node) will be
+* linked to antoher instance node (as text subject):
+* - if a subject is already set, it will be used
+*   (use wisski_textproc_get_subjects)
+* - if the uri parameter in the GET array is given, the text will be linked to
+*   that individual
+* - if the $group_id is non-NULL, the first annotation instance with that group
+*   id will be set as subject
+*
+* @author Martin Scholz
+*/
+function wisski_editor_freeText(&$form_state, $node = NULL, $group_id = NULL) {
+  
+  // check if text shall be about a preset individual
+  if ($_GET['uri']) {
+    $indiv_uri = $_GET['uri'];
+    $indiv_uri = wisski_store_getObj()->wisski_ARCAdapter_delNamespace($indiv_uri);
+  } else {
+    $indiv_uri = NULL;
+  }
+  
+  // use a special input format for the textarea
+  $format = variable_get('wisski_editor_input_format', '');
+  if (!$format === "") {
+    global $base_root, $base_path;
+    drupal_set_message(t("No input format specified! Please set <a href='%s'>here</a>.", array('%s' => "$base_root${base_path}admin/settings/wisski/editor")), "error");
+    return array();
+  }
+
+  // if $node is not set, the text node is to be added
+  $firsttime = ($node === NULL);
+
+  if ($firsttime) {
+    
+    // upon add, create a URI for the text doc
+    // done in submit handler!
+
+  } else {
+    // upon edit, check if this node is an individual for text content,
+    // ie. check if it is an instance of the defined class for texts ($doc_class)
+
+    module_load_include('inc', 'wisski_pathbuilder', 'wisski_pathbuilder');
+    // this variable contains the path ids for all paths with
+    // special meaning to the text triplification
+    $paths = variable_get('wisski_textproc_paths', array());
+    $doc_path = wisski_pathbuilder_getPathData($paths['doc_class']); // the group that represents a text document
+    $doc_path_array = ($doc_path['is_group']) ? _wisski_pathbuilder_calculate_group_samepart($doc_path['id']) : unserialize($doc_path);
+    $doc_class = $doc_path_array['x0'];
+    $store = wisski_store_getObj()->wisski_ARCAdapter_getStore();
+    $node_uri = wisski_store_getObj()->wisski_ARCAdapter_delNamespace($node->title);
+    
+    // HACK(?): Set the form title
+    $node->title = t('Edit annotated text');  
+
+    $yesno = $store->query("ASK { <$node_uri> a <$doc_class>. }");
+    if ($store->getErrors()) {
+      drupal_set_message('errors asking TS: ' . join('; ', $store->getErrors()));
+      return $form;
+    }
+    if (!$yesno) {
+      drupal_set_message(t("This individual is no text document (its class is not %dc)", array('%dc' => $doc_class)));
+      return $form;
+    }
+  }
+
+  $body = ($node !== NULL) ? $node->body : '';
+  // we do not use the standard body field generation method
+  // as we cannot properly deal with a lot of settings
+  $form['body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Enter text'),
+    '#rows' => 30,
+    '#default_value' => $body,
+  );
+  // add the input format options
+  $form['format'] = filter_form($format);
+
+  $form['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  
+  // store the id of the text node, the group id of the subject to be set
+  // and the uri of the individual that shall be subject
+  $form_state['storage']['nid'] = ($node === NULL) ? NULL : $node->nid;
+  $form_state['storage']['group_id'] = $group_id;
+  $form_state['storage']['indiv_uri'] = $indiv_uri;
+  
+  return $form;
+  
+}
+
+
+/**
+* @author Martin Scholz
+*/
+function wisski_editor_freeText_submit($form, $form_state) {
+  
+  // the new text
+  $text = $form['#post']['body'];
+  
+  // restore the id of the text node, the group id of the subject to be set
+  // and the uri of the individual that shall be subject
+  $nid = $form_state['storage']['nid'];
+  $group_id = $form_state['storage']['group_id'];
+  $indiv_uri = $form_state['storage']['indiv_uri'];
+  
+  // whether we add or edit the node
+  $firsttime = ($nid === NULL);
+
+  if ($firsttime) {
+    // upon add, build a node object
+    
+    // create a uri for the text instance
+    drupal_load('module', 'wisski');
+    $doc_uri = wisski_instance_prefix() . wisski_get_uuid(4) . '_text';
+    global $user;
+
+    $node = new stdClass();
+    $node->type = 'individual';
+    $node->title = wisski_store_getObj()->wisski_ARCAdapter_addNamespace($doc_uri);
+    $node->teaser = '';
+    $node->uid = $user->uid;
+    $node->status = 1;
+    $node->promote = 1;
+    $node->comment = 2;
+    $node->format = variable_get('wisski_editor_input_format', '');
+  } else {
+    // upon edit, load the node data
+    $node = node_load($nid);
+    $doc_uri = wisski_store_getObj()->wisski_ARCAdapter_delNamespace($node->title);
+  }
+  
+  // we always want to store changes as new revisions.
+  // put new text in body field, so that it will be saved to db and a new
+  // revision will be created
+  $node->revision = 1;
+  $node->body = $text; 
+
+  // save the node (make revision)
+  node_save($node);
+
+  // set the subject of the text
+  if ($indiv_uri) {
+    // a specific individual is given
+    // set it now!
+    wisski_textproc_set_subject($doc_uri, $indiv_uri);
+  } elseif ($group_id) {
+    // first occuernce in text of instance of group $group_id will be subject
+    // cache the the group id, the subject will be set when triples are created
+    variable_set('wisski_textproc_text_group_id_' . $doc_uri, $group_id);
+  
+  } 
+  
+  // redirect depending on settings
+  global $base_root, $base_path;
+
+  if (variable_get("wisski_editor_storeAfterSave", TRUE)) {
+    // go to triple store page
+    drupal_goto("$base_root${base_path}node/" . $node->nid . "/rdfa_insert");
+    //wisski_editor_storeTriples($node);
+  } else {
+    // storing the triples must be triggered manually => goto page of individual, if possible
+    // deprecated
+    $node->body .= "<div class='wisski_storeRDFa'><a href=\"$baseroot${base_path}node/" . $node->nid . "/rdfa_insert\">" . t('Add annotations to database...') . "</a><br>&nbsp;</div>";
+    if ($indiv_uri) drupal_goto($indiv_uri);
+    drupal_goto("$base_root${base_path}node/" . $node->nid);
+  }
+  
+}
+
+
+
+
+/* Either store the triples of a text node or display a list of the triples
+* 
+* If $force is FALSE, only display a list of all created triples.
+* If $force is TRUE the triples will be saved to the triple store.
+*
+* Redirects to the text subject 
+* @return either an HTML page with triple table or nothing (redirect page)
+*
+* @author Martin Scholz
+*/
+function wisski_editor_storeTriples($node, $force = FALSE) {
+  global $base_root, $base_path;
+  
+  // generate trilpes from text
+  $doc_uri = wisski_store_getObj()->wisski_ARCAdapter_delNamespace($node->title);
+  $paths = variable_get('wisski_textproc_paths', array());
+  $tr = wisski_textproc_triplify_xhtml($node->body, $doc_uri, $paths);
+    
+  if ($force || !variable_get("wisski_editor_showTriplesBeforeStore", TRUE)) {
+    // store the triples
+    
+    // make a node for each instance
+    foreach ($tr as $t) {
+      // nod for document already exists! 
+      if ($t['s'] == $doc_uri)
+        continue;
+      $n = wisski_store_addNodeForTriple($t);
+    }
+    
+    $store = wisski_store_getObj()->wisski_ARCAdapter_getStore();
+
+    // store them in the default triples graph
+    $a = $store->insert($tr, wisski_store_getObj()->wisski_ARCAdapter_graphName());
+
+    if ($store->getErrors()) {
+      drupal_set_message(t("errors storing data in triple store:") . "<br/>" . join('<br/>', $store->getErrors()));
+    } else {
+      drupal_set_message(t("The data was successfully transferred to the database."));
+    }
+   	
+    // goto subject page if subject exists, otherwise stay on text node
+    $subjects = wisski_textproc_get_subjects($doc_uri);
+    if (isset($subjects)) {
+      drupal_goto($subjects[0]);
+    } else {    
+      // TODO: create a new node and make it subject of this text
+      drupal_goto($base_root . $base_path . "node/" . $node->nid);
+    }
+
+  } else {
+    // display a list of triples
+
+    foreach ($tr as $triple) {
+      $item = array(
+        $triple['s'],
+        $triple['p'],
+        $triple['o_type'] != 'literal' ? $triple['o'] : '"' . $triple['o'] . '"',
+      );
+      $list[] = $item;
+    }
+    
+    $output = theme('table', array(t('Subject'), t('Predicate'), t('Object')), $list);
+    
+    // we provide two "buttons":
+    // "Store" will redirect to again this function with force set, so that
+    // triples are stored,
+    // "Cancel" will not save the triples but go to text node page!
+    // TODO: "Cancel should be altered so that it goes to subject node
+    $actions = array(
+      'store' => array(
+        '#value' => "<a href=\"$base_root${base_path}node/" . $node->nid . '/rdfa_insert/force">' . t('Store') . '</a>',
+        '#weight' => 0,
+      ),
+      'sep' => array(
+        '#value' => ' | ',
+        '#weight' => 50,
+      ),
+      'cancel' => array(
+        '#value' => "<a href=\"$base_root${base_path}node/" . $node->nid . '">' . t('Cancel') . '</a>',
+        '#weight' => 100,
+      )
+    );
+    $a1 = $actions;
+    $a2 = $actions;
+  
+    return drupal_render($a1) . 
+      $output . drupal_render($a2);
+  
+  }
+}
+
+
+
+
+

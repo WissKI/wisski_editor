@@ -1,0 +1,31 @@
+/* CSS Styles for annotation term types.
+* The file content is generated once for each group replacing 
+* % TYPE % by the group id and
+* % COLOR % by the color
+* This file is a template for groups with no icon
+*/
+
+/* Approved annotation in the text */
+span.wisski_anno_user.wisski_anno_class_%TYPE%{
+  color: %COLOR%;
+}
+
+/* Proposed annotation in the text */
+span.wisski_anno_class_%TYPE% {
+  color: %COLOR%
+}
+
+span.wisski_anno_class_%TYPE% span[title] {
+  cursor: help;
+}
+
+/* WissKI menu and context menu */
+.defaultSkin .mceMenu td.wisski_anno_class_%TYPE% {
+  padding-left: 20px;
+}
+.defaultSkin .mceMenuItemSub td.wisski_anno_class_%TYPE% {}
+.defaultSkin .mceMenuItem td.wisski_anno_class_%TYPE% span {
+  color: %COLOR%
+}
+
+

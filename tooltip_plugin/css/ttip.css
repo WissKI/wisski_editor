@@ -1,0 +1,33 @@
+#ttip_title h1
+{
+  font-size:0.9em;
+  font-weight:bold;
+  padding:0;
+  margin:0;
+}
+
+#ttip_title h2
+{
+  font-size:0.8em;
+  font-weight:bold;
+  padding:0;
+  margin:0;
+}
+
+#ttip_content tbody
+{
+  /*font-size:0.8em;*/
+  border:none;
+}
+
+#ttip_content td
+{
+  font-size:0.9em;
+  vertical-align:top;
+  font-weight:bold;
+}
+
+#tip_content tr
+{
+
+}

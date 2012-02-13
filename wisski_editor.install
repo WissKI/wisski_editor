@@ -1,0 +1,93 @@
+<?php
+
+function wisski_editor_install() {
+  
+  // install a input format and link it with text annotation
+  $filter = new StdClass();
+  $filter->name = 'WissKI Annotated HTML';
+  $filter->roles = '';
+  $filter->cache = 1;
+  drupal_write_record('filter_formats', $filter);
+  variable_set('wisski_editor_input_format', $filter->format);
+  
+  // init wysiwyg tinymce, set default buttons and appearance
+  if (wysiwyg_get_editor('tinymce') === FALSE) {
+    // no tinymce installed.
+    drupal_set_message(t('TinyMCE is not installed. Please install it !l and configure it manually or reinstall module %m', array('%m' => 'wisski_editor', '!l' => l(t('here'), 'admin/settings/wysiwyg'))), 'warning');
+  } else {
+    $tinymce = new StdClass();
+    $tinymce->format = $filter->format;
+    $tinymce->editor = 'tinymce';
+    $tinymce->settings = serialize(array(
+      "default" => 1,
+      "user_choose" => 0,
+      "show_toggle" => 1,
+      "theme" => "advanced",
+      "language" => "en",
+      "buttons" => array(
+        "default" => array(
+          "bold" => 1,
+          "italic" => 1,
+          "underline" => 1,
+          "undo" => 1,
+          "redo" => 1,
+          "charmap" => 1,
+        ),
+        "advlink" => array("advlink" => 1),
+        "contextmenu" => array("contextmenu" => 1),
+        "inlinepopups" => array("inlinepopups" => 1),
+        "paste" => array("pasteword" => 1),
+        "wisskicore" => array(
+          "wisskicore" => 1,
+          "wisskiCoreToggleApproved" => 1,
+          "wisskiCoreDeleteAnno" => 1,
+        ),
+        "wisskimenu" => array("wisskimenu" => 1),
+        "wisskiprogress" => array("wisski_progress" => 1),
+        "wisskiSend" => array("wisski_manualsend" => 1),
+        "wisskiAggregation" => array("wisskiAggregationShowDialog" => 1),
+      ),
+      "toolbar_loc" => "top",
+      "toolbar_align" => "left",
+      "path_loc" => "none",
+      "resizing" => 0,
+      "verify_html" => 1,
+      "preformatted" => 0,
+      "convert_fonts_to_spans" => 1,
+      "remove_linebreaks" => 1,
+      "apply_source_formatting" => 0,
+      "paste_auto_cleanup_on_paste" => 0,
+      "block_formats" => "p,address,pre,h2,h3,h4,h5,h6,div",
+      "css_setting" => "theme",
+      "css_path" => "",
+      "css_classes" => "",
+    ));
+    drupal_write_record('wysiwyg', $tinymce);
+      
+  }
+
+  // create css file
+  module_load_include('inc', 'wisski_editor');
+  wisski_editor_create_css_file();
+
+}
+
+
+function wisski_editor_uninstall() {
+  
+  // delete input formart
+  $format = variable_get('wisski_editor_input_format', NULL);
+  if ($format !== NULL) {
+    db_query('DELETE FROM {filter_formats} WHERE format = %d', $format);
+  }
+  
+  // delete all variables; see <http://api.drupal.org/api/drupal/includes--bootstrap.inc/function/variable_del/6>
+  global $conf;
+  foreach (array_keys($conf) as $key) {
+    if (strpos($key, 'wisski_editor_') === 0) {
+      variable_del($key);
+    }
+  }
+  
+}
+

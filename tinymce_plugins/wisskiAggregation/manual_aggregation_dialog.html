@@ -1,0 +1,70 @@
+<html>
+<meta content="text/html; charset=utf-8"></meta>
+
+<script type="text/javascript" src="../../../../libraries/tinymce/jscripts/tiny_mce/tiny_mce_popup.js"></script>
+<script type="text/javascript" src="../../../../libraries/tinymce/jscripts/tiny_mce/utils/mctabs.js"></script>
+<script type="text/javascript" src="../../../../libraries/tinymce/jscripts/tiny_mce/utils/form_utils.js"></script>
+<script type="text/javascript" src="../../../../libraries/tinymce/jscripts/tiny_mce/utils/validate.js"></script>
+<script type="text/javascript" src="manual_aggregation_dialog.js"></script><!-- hier unten damit alles eingelesen und verfügbar ist! -->
+<body>
+  <form>
+    <div>
+      <p>View / Edit relations between entities</p>
+<!--      <label for="events">Event type:</label>
+      <select id="events" onChange="eventsChange()" style="width:200px"></select>-->
+    </div>
+    <div>
+      <p>
+        <fieldset><legend>Add relation</legend>
+          <table>
+            <tr>
+              <td style="width: 30%"><span id="addRelThis"></td>
+              <td style="width: 30%">
+                <select id="addRelRelation">
+                  <option value="">&lt;Select relation&gt;</option>
+                </select>
+              </td>
+              <td style="width: 30%;"><select id="addRelObject"></select></td>
+              <td style="width: 10%"><input id="addRelAdd" type="button" value="Add"/>
+            </tr>
+           <!-- <tr>
+              <td><select id="addRevSubject" style="width:200px"></select></td>
+              <td>
+                <select id="addRevRelation" style="width:200px">
+                  <option value="">&lt;Select relation&gt;</option>
+                </select>
+              </td>
+              <td><span id="addRevThis"></td>
+              <td><input id="addRevAdd" type="button" value="Add"/>
+            </tr>-->
+          </table>
+        </fieldset>
+      </p>  
+    </div>
+    <div>
+      <p>
+        <fieldset style="height:100px"><legend>Relations set on this annotation</legend>
+          <table>
+            <tbody id="existingRelsThis"></tbody>
+          </table>
+        </fieldset>
+      </p>
+    </div>
+    <div>
+      <p>
+        <fieldset style="height:100px"><legend>Relations set on other annotations</legend>
+          <table>
+            <tbody id="existingRelsOthers"></tbody>
+          </table>
+        </fieldset>
+      </p>
+    </div>
+    <div>
+      <p>
+        <input id="close-window" type="button" value="Close" onClick="tinyMCEPopup.close();"/>
+      </p>
+    </div>
+  </form>
+</body>
+
+</html>

@@ -1,0 +1,46 @@
+/* CSS Styles for annotation term types.
+* The file content is generated once for each group replacing 
+* % TYPE % by the group id and
+* % COLOR % by the color
+* % ICON % by the icon url
+*/
+
+/* Approved annotation in the text */
+span.wisski_anno_user.wisski_anno_class_%TYPE%{
+  padding-left: 20px;
+  background: url(%ICON%) no-repeat left center;
+  color: %COLOR%;
+}
+
+/* Proposed annotation in the text */
+span.wisski_anno_class_%TYPE% {
+  padding-left: 20px;
+  background: url(%ICON%) no-repeat left center;
+  color: %COLOR%
+}
+
+span.wisski_anno_class_%TYPE% span[title] {
+  cursor: help;
+}
+
+/* WissKI menu and context menu */
+.defaultSkin .mceMenu td.wisski_anno_class_%TYPE% {
+  padding-left: 20px;
+  background: url(%ICON%) no-repeat left center;
+}
+.defaultSkin .mceMenuItemSub td.wisski_anno_class_%TYPE% {}
+.defaultSkin .mceMenuItem td.wisski_anno_class_%TYPE% span {
+  color: %COLOR%
+}
+
+/* WissKI toolbar buttons */
+.defaultSkin a.mce_wisski_menu_%TYPE% span.mceButtonLabel {
+/*  background-color:%COLOR% */
+  padding-left: 20px;
+  padding-top:3px;
+  background: url(%ICON%) no-repeat left center;
+  color: %COLOR%
+}
+
+
+
