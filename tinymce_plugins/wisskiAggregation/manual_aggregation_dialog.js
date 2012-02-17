@@ -170,7 +170,7 @@ tinyMCEPopup.onInit.add(function(ed) {
               });
             });
             if (!found) { // dead link: entity does not exist
-              w.editor.dom.removeClass(anno, 'wisski_anno_rel_' + prop_id_enc + ':' + uri_enc);
+              w.editor.dom.removeClass(anno, 'wisski_anno_rel_' + prop_id_enc + ':' + range_anno_uri_enc);
             }
           }
         }
