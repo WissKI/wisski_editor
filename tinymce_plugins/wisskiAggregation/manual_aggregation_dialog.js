@@ -1,5 +1,4 @@
 
-
 tinyMCEPopup.onInit.add(function(ed) {
   
   var w = {
