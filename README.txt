@@ -27,3 +27,11 @@ colors and icons for the defined groups. Specify, of which groups new instances
 may be created with the editor and instances of which classes are to be
 considered places. For both fields type in a ws-separated list of group ids.
 
+License
+=============================
+
+All files except the image files in
+./tinymce_plugins/wisski[core|progress]/img/ are licensed under the same terms
+as Drupal itself, i.e. the GNU GPLv2 or later; see LICENSE.txt.
+For the licensing of the image files see README.txt's in the respective
+directories.
