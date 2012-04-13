@@ -123,14 +123,6 @@ function _wisski_editor_wysiwyg_plugin($editor, $version) {
           'options' => array(),
           'load' => TRUE,
           ),
-      // Provide dialog for searching/browsing vocabulary entries
-      // The selected entry will be made an annotation
-      'wisskiSearch' => array(
-          'path' => $path_wisski_editor . '/tinymce_plugins/wisskiSearch/editor_plugin_src.js',
-          'buttons' => array('wisskiSearchShowDialog' => 'Search Entities'),
-          'options' => array(),
-          'load' => TRUE,
-          ),
       );
 
   return $plugins;
