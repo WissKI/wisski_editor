@@ -16,8 +16,14 @@ function wisski_editor_admin_settings($form_state) {
     $info = wisski_pathbuilder_getPathData($id);
     if ($info['group_id'] < 1) $pb_groups["$id"] = $info['name'];
   }
-
-  // 
+  
+  //for filterformats:
+  $filter_formats = array();
+  foreach (filter_formats() as $id) {
+	$filter_formats[$id->format] = $id->name;
+	//drupal_set_message('<pre>'. print_r($id, TRUE) .'</pre>');
+  } 
+    
   global $base_root, $base_path;
   $iconpath = $base_root . $base_path.file_directory_path() . '/';
   $icon_approved = $iconpath . variable_get('wisski_editor_icon_approved','noicon.jpg');
@@ -34,16 +40,22 @@ function wisski_editor_admin_settings($form_state) {
       '#weight' => 2,
 
       'place_groups' => array(
-        '#type' => 'textfield',
+        '#type' => 'select',
         '#title' => t('Place groups'),
-        '#default_value' => join(' ', variable_get('wisski_editor_place_groups', array())),
+        '#multiple' => true,
+        '#options' => $pb_groups,
+        '#default_value' => variable_get('wisski_editor_place_groups', array()),
         ),
 
       'input_format' => array(
-        '#type' => 'textfield',
+        '#type' => 'select',
+        '#multiple' => false,
+        '#options' => $filter_formats,
         '#title' => t('Input format'),
         '#default_value' => variable_get('wisski_editor_input_format', ''),
-        ),
+        ), 
+        
+
 
       'show_triples' => array(
         '#type' => 'checkbox',
@@ -52,10 +64,13 @@ function wisski_editor_admin_settings($form_state) {
         ),
 
       'instantiable_groups' => array(
-          '#type' => 'textfield',
+          '#type' => 'select',
+          '#multiple' => true,
+          '#options' => $pb_groups,
           '#title' => t('Groups of which instances may be created'),
-          '#default_value' => join(' ', variable_get('wisski_editor_instantiable_groups', array())),
+          '#default_value' => variable_get('wisski_editor_instantiable_groups',  array()),
           ),
+          
       'use_rdfa' => array(
           '#type' => 'checkbox',
           '#title' => t('Encode entities also in RDFa.'),
@@ -120,8 +135,8 @@ function wisski_editor_admin_settings($form_state) {
 */
 function wisski_editor_admin_settings_submit($form, $form_state) {
 
-  variable_set('wisski_editor_place_groups', preg_split('/[,\\s]+/', $form_state['values']['place_groups'], -1, PREG_SPLIT_NO_EMPTY));
-  variable_set('wisski_editor_instantiable_groups', preg_split('/[,\\s]+/', $form_state['values']['instantiable_groups'], -1, PREG_SPLIT_NO_EMPTY));
+  variable_set('wisski_editor_place_groups', $form_state['values']['place_groups']);
+  variable_set('wisski_editor_instantiable_groups', $form_state['values']['instantiable_groups']);
   variable_set('wisski_editor_input_format', $form_state['values']['input_format']);
   variable_set('wisski_editor_use_rdfa', $form_state['values']['use_rdfa']);
   variable_set('wisski_editor_showTriplesBeforeStore', $form_state['values']['show_triples'] ? TRUE : FALSE);
