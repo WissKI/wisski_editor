@@ -32,6 +32,12 @@
   */
   WissKI.editor.tooltips.setElement = function(elem) {
   
+    // either jQuery or the qTip tooltip plugin are not loaded
+    // just quietly quit, so that we do not produce an error
+    if (typeof jQuery === 'undefined' ||
+        typeof jQuery.fn.qtip === 'undefined') return;
+
+  
     var className = elem.className;
 
     /* position of tooltip must be calculated if an editor is available */
