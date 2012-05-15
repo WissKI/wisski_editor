@@ -26,10 +26,10 @@
       t.instantiable_classes = ed.getParam('instantiable_classes'); // classes for which new instances may be created
 
       t.classes_x_vocabs = [];  // mapping of classes to vocabs
-      for (var c in t.ontology.classes) {
-        if (-1 < tinymce.inArray(t.instantiable_classes, t.ontology.classes[c].id))
-          t.classes_x_vocabs.push({'class' : t.ontology.classes[c]}); 
+      for (var c in t.instantiable_classes) {
+        t.classes_x_vocabs.push({'class' : t.ontology.classes[t.instantiable_classes[c]]});
       }
+
 
       if (tinymce.isIE6) {
         alert("IE 6 or older is not supported by WissKI Annotation Tools. Some functionality might not work correctly.");
