@@ -67,7 +67,7 @@ function _wisski_editor_wysiwyg_plugin($editor, $version) {
       'wisskicore' => array(
         'path' => $path_wisski_editor . '/tinymce_plugins/wisskicore/editor_plugin.js',
         'extensions' => array('wisskicore' => t('Wisski Core')),
-        'buttons' => array('wisskiCoreToggleApproved' => t('Approve Annotation'), 'wisskiCoreDeleteAnno' => t('Delete Annotation')),
+        'buttons' => array('wisskiCoreToggleApproved' => t('WissKI Approve Annotation'), 'wisskiCoreDeleteAnno' => t('WissKI Delete Annotation')),
         'options' => array(
           // callback url for entity suggestions
           // see also wisski_editor_ws_suggest()
@@ -119,7 +119,7 @@ function _wisski_editor_wysiwyg_plugin($editor, $version) {
       // between annotations/entities
       'wisskiAggregation' => array(
           'path' => $path_wisski_editor . '/tinymce_plugins/wisskiAggregation/editor_plugin.js',
-          'buttons' => array('wisskiAggregationShowDialog' => 'Aggregate Entities'),
+          'buttons' => array('wisskiAggregationShowDialog' => 'WissKI Aggregate Entities'),
           'options' => array(),
           'load' => TRUE,
           ),
