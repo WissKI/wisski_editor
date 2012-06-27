@@ -187,49 +187,96 @@ function _wisski_editor_build_ontology($subgroups_as_events = FALSE) {
     }
 
   }
+  
   // gather properties by looking at paths& groups defined in each top group
   $props_by_id = array();
   $event_props_by_id = array();
   foreach ($groups_by_id as $gid => $group) {
-    foreach (wisski_pathbuilder_getAllMembers($gid, $subgroups_as_events) as $pid) {
-      $path_data = wisski_pathbuilder_getPathData($pid);
-      if (!$path_data['enabled']) continue;
-      
-      if (!$path_data['is_group']) {
-        $path_array = unserialize($path_data['path_array']);
+    $gid_agenda = array($gid);
+    $cur_gid = NULL;
+    
+    while (($cur_gid = array_pop($gid_agenda)) !== NULL) {
+      foreach (wisski_pathbuilder_getMembers($cur_gid, TRUE) as $pid) {
+        $path_data = wisski_pathbuilder_getPathData($pid);
+        if (!$path_data['enabled']) continue;
+        
+        $path_array = ($path_data['is_group']) ? _wisski_pathbuilder_calculate_group_samepart($pid) : unserialize($path_data['path_array']);
+        
         $path = array(
-            'id' => $pid,
-            'label' => $path_data['name'],
-            'domain' => $subgroups_as_events ? $path_data['group_id'] : $gid,
-            'range' => array(),
-            );
-        for ($i = $path_data['length']; $i > 0; $i--) {
-          if (isset($group_ids_by_cl[$path_array["x$i"]])) {
-            $groups_by_id[$gid]['domain_for'][] = $pid;
-            $range_group_ids = $group_ids_by_cl[$path_array["x$i"]];
-            foreach ($range_group_ids as $range_group_id) {
-              if (!in_array($range_group_id, $path['range'])) {
-                $path['range'][] = $range_group_id;
-                $groups_by_id[$range_group_id]['range_for'][] = $pid;
+          'id' => $pid,
+          'label' => $path_data['name'],
+          'domain' => $subgroups_as_events ? $cur_gid : $gid,
+          'range' => array(), // will be filled in next steps
+        );
+
+        if (!$path_data['is_group']) {
+
+          if ($path_data['disamb'] != 0) {
+            
+            // if there is a disamb, we only look at this one
+            $uri = $path_array['x' . ($path_data['disamb'] - 1)];
+            foreach ($groups_by_id as $tgid => $top_group) {
+              if ($top_group['uri'] == $uri) {
+                $path['range'][] = $tgid;
+              }
+            }
+
+          } else {
+            
+            // heuristics when there is no disamb info:
+            // search for an appropriate class beginning from end of path
+            // consider only first match
+            for ($i = $path_data['length']; $i > 0 && empty($path['range']); $i--) {
+              if (isset($group_ids_by_cl[$path_array["x$i"]])) {
+                $groups_by_id[$gid]['domain_for'][] = $pid;
+                $range_group_ids = $group_ids_by_cl[$path_array["x$i"]];
+                foreach ($range_group_ids as $range_group_id) {
+                  if (!in_array($range_group_id, $path['range'])) {
+                    $path['range'][] = $range_group_id;
+                    $groups_by_id[$range_group_id]['range_for'][] = $pid;
+                  }
+                }
               }
             }
           }
-        }
-        //      $path['range'][] = 'literal';
-        if ($path['range']) {
-          $props_by_id[$pid] = $path;
-        }
 
-      } else {  // is a subgroup
-
-        $path = array(
+          if (!empty($path['range'])) {
+            $props_by_id[$pid] = $path;
+          }
+  
+        } else {  // is a subgroup
+          
+          $path = array(
             'id' => $pid,
             'label' => $path_data['name'],
-            'domain' => $path_data['group_id'],
-            'range' => array($pid),
-            );
-        $props_by_id[$pid] = $path;
+            'domain' => $subgroups_as_events ? $cur_gid : $gid,
+            'range' => array(),
+          );
 
+          if ($subgroups_as_events) $path['range'][] = $pid;
+
+          $range = array();
+          $uri = $path_array['x' . floor(count($path_array) / 2)];
+          foreach ($groups_by_id as $tgid => $top_group) {
+            if ($top_group['uri'] == $uri) {
+              $path['range'] = array($tgid);
+            }
+          }
+
+          if (!empty($path['range'])) {
+            $props_by_id[$pid] = $path;
+          } 
+          
+          if (empty($path['range']) || $path['range'] === $pid) {
+            // exclude case where range was set in the for-loop above
+            // ie. if this subgroup represents a type for an annotatable entity
+            // we don't go deeper into the path tree
+            // (all paths below would be infact properties of the entity...)
+            $gid_agenda = array($pid);
+
+          }
+
+        }
       }
     }
   }
