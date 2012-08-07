@@ -14,7 +14,7 @@ function wisski_editor_create_css_file() {
   $templatedefault = file_get_contents($path . "template_default.css");
 
   // write the default settings
-  $wisskicss = str_replace("%COLOR%" , variable_set('wisski_editor_groupcolor_default', '#CCCCCC'), $templatedefault);
+  $wisskicss = str_replace("%COLOR%" , variable_get('wisski_editor_groupcolor_default', '#CCCCCC'), $templatedefault);
 
   // for every top group of the import PB section
   // write adapt css template  with icon and color information
