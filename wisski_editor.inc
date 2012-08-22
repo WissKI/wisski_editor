@@ -272,7 +272,7 @@ function _wisski_editor_build_ontology($subgroups_as_events = FALSE) {
             // ie. if this subgroup represents a type for an annotatable entity
             // we don't go deeper into the path tree
             // (all paths below would be infact properties of the entity...)
-            $gid_agenda = array($pid);
+            $gid_agenda[] = $pid;
 
           }
 
