@@ -321,6 +321,8 @@
 
 
   // attach a infobox to each annotation in the DOM tree
-  $('.wisski_anno').ttip_set();
+  $().ready(function() {
+    $('.wisski_anno').ttip_set();
+  });
 
 })();
