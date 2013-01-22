@@ -234,6 +234,15 @@
   /** Include the google map image and set it to the coordinates
   */
   WissKI.editor.tooltips.getMap = function(coords){
+    /* check coords format, we need decimal */
+    if (coords.lat.match(/[NSWE]/)) {
+      coords = WissKI.editor.tooltips.parseDMSD(coords);
+      window.console.log('coords nswe', coords);
+    } else if (coords.lat.match(/°|\d[°'`´ ]+\d/)) {
+      coords = WissKI.editor.tooltips.parseDMSminus(coords);
+      window.console.log('coords minus', coords);
+    }
+
     /* settings for maps */
     var zoomlvl = 'zoom=8';
     var size = '&size=125x125';
@@ -309,7 +318,61 @@
 
     return label;
   }
+
+
+  /** taken from http://stackoverflow.com/questions/1140189/converting-latitude-and-longitude-to-decimal-values
+  */
+  WissKI.editor.tooltips.parseDMSminus = function(coords) {
+    var lat_parts = coords.lat.split(/[^-\d\.]+/);
+    var lng_parts = coords.lng.split(/[^-\d\.]+/);
     
+    /* fill values if not present */
+    if (lat_parts.length == 1) lat_parts[1] = 0;
+    if (lat_parts.length == 2) lat_parts[2] = 0;
+    if (lng_parts.length == 1) lng_parts[1] = 0;
+    if (lng_parts.length == 2) lng_parts[2] = 0;
+
+    /* convert */
+    var lat = WissKI.editor.tooltips.convertDMSToDD(lat_parts[0], lat_parts[1], lat_parts[2], 'N');
+    var lng = WissKI.editor.tooltips.convertDMSToDD(lng_parts[0], lng_parts[1], lng_parts[2], 'E');
+    return {lat : lat, lng : lng};
+  }
+
+  /** taken from http://stackoverflow.com/questions/1140189/converting-latitude-and-longitude-to-decimal-values
+  */
+  WissKI.editor.tooltips.parseDMSD = function(coords) {
+    var lat_parts = coords.lat.split(/[^\d\w\.]+/);
+    var lng_parts = coords.lng.split(/[^\d\w\.]+/);
+    
+    /* fill values if not present */
+    if (lat_parts.length == 1) lat_parts[1] = 0;
+    if (lat_parts.length == 2) lat_parts[2] = 0;
+    if (lat_parts.length == 3) lat_parts[3] = 'N';
+    if (lng_parts.length == 1) lng_parts[1] = 0;
+    if (lng_parts.length == 2) lng_parts[2] = 0;
+    if (lng_parts.length == 3) lng_parts[3] = 'E';
+    
+    /* convert */
+    var lat = WissKI.editor.tooltips.convertDMSToDD(lat_parts[0], lat_parts[1], lat_parts[2], lat_parts[3]);
+    var lng = WissKI.editor.tooltips.convertDMSToDD(lng_parts[0], lng_parts[1], lng_parts[2], lng_parts[3]);
+    return {lat : lat, lng : lng};
+  }
+
+  /** taken from http://stackoverflow.com/questions/1140189/converting-latitude-and-longitude-to-decimal-values
+  */
+  WissKI.editor.tooltips.convertDMSToDD = function(days, minutes, seconds, direction) {
+    days = parseFloat(days);
+    minutes = parseFloat(minutes);
+    seconds = parseFloat(seconds);
+    var dd = Math.abs(days) + minutes/60 + seconds/(3600);
+    window.console.log("dd", [dd, days, minutes, seconds, direction]);
+    dd = parseFloat(dd);
+    if (direction == "S" || direction == "W" || days < 0) {
+      dd = dd * -1;
+    } // Don't do anything for N or E
+    return dd;
+  }
+
 
   /** Declare a new jquery function that attaches an infobox to one or more DOM elements
   */
