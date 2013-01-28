@@ -235,12 +235,10 @@
   */
   WissKI.editor.tooltips.getMap = function(coords){
     /* check coords format, we need decimal */
-    if (coords.lat.match(/[NSWE]/)) {
+    if (coords.lat.match(/[NSWE]/) || coords.lng.match(/[NSWE]/)) {
       coords = WissKI.editor.tooltips.parseDMSD(coords);
-      window.console.log('coords nswe', coords);
     } else if (coords.lat.match(/°|\d[°'`´ ]+\d/)) {
       coords = WissKI.editor.tooltips.parseDMSminus(coords);
-      window.console.log('coords minus', coords);
     }
 
     /* settings for maps */
@@ -365,7 +363,6 @@
     minutes = parseFloat(minutes);
     seconds = parseFloat(seconds);
     var dd = Math.abs(days) + minutes/60 + seconds/(3600);
-    window.console.log("dd", [dd, days, minutes, seconds, direction]);
     dd = parseFloat(dd);
     if (direction == "S" || direction == "W" || days < 0) {
       dd = dd * -1;
