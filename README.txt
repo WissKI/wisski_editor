@@ -1,4 +1,3 @@
-
 module wisski_editor
 =============================
 
@@ -11,6 +10,8 @@ Installation instructions
 Before you install this module you should
 1) install the wysiwyg module
 2) install TinyMCE according to the instructions of the wysiwyg module.
+Note: Please download the 3.4.x version of TinyMCE as the Wysiwyg module
+currently (6.x-2.4) does not fully support the 3.5.x version.
 
 Then you can set up this module:
 1) copy the module files to your directory sites/all/modules
