@@ -247,8 +247,11 @@
     var maptype = '&maptype=roadmap';
     var marker = '&markers=color:red|label:A|'+coords.lat+','+coords.lng;
     var googleMaps = 'http://maps.google.com/maps/api/staticmap?';
+    var googleMapsLink = 'http://maps.google.com/?';
+    var loc = 'q=loc:'+coords.lat+','+coords.lng;
     var query = googleMaps+zoomlvl+size+maptype+marker+'&sensor=false';
-    var map = '<img src="'+query+'" style="padding-right:5px;">';
+    var linkQuery = googleMapsLink + loc + '&z=8';
+    var map = '<a target="_blank" href="' + linkQuery + '"><img src="'+query+'" style="padding-right:5px;"></a>';
     return map;
   }
 
