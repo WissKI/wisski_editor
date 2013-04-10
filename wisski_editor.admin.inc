@@ -76,6 +76,11 @@ function wisski_editor_admin_settings($form_state) {
           '#title' => t('Encode entities also in RDFa.'),
           '#default_value' => variable_get('wisski_editor_use_rdfa', TRUE),
           ),
+      'show_tooltips_for_form' => array(
+          '#type' => 'checkbox',
+          '#title' => t('Show tooltips infobox in structured data form'),
+          '#default_value' => variable_get('wisski_editor_show_tooltips_for_form', FALSE),
+          ),
       );
 
 
@@ -140,6 +145,7 @@ function wisski_editor_admin_settings_submit($form, $form_state) {
   variable_set('wisski_editor_input_format', $form_state['values']['input_format']);
   variable_set('wisski_editor_use_rdfa', $form_state['values']['use_rdfa']);
   variable_set('wisski_editor_showTriplesBeforeStore', $form_state['values']['show_triples'] ? TRUE : FALSE);
+  variable_set('wisski_editor_show_tooltips_for_form', $form_state['values']['show_tooltips_for_form'] ? TRUE : FALSE);
 
   //save colors and icons:
   variable_set('wisski_editor_groupcolor_default', $form_state['values']['clpdefault']);

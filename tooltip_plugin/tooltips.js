@@ -383,8 +383,17 @@
   }
 
 
-  // attach a infobox to each annotation in the DOM tree
   $().ready(function() {
+    
+    // augment links in the structured data form so that vocab info box can be displayed
+    if (Drupal.settings.wisski.editor.showTooltipsForForm) {
+      $('.wki-data-value a').each(function() {
+        $(this).addClass('wisski_anno');
+        $(this).addClass('wisski_anno_uri_' + encodeURIComponent($(this).attr('href')));
+      });
+    }
+
+    // attach a infobox to each annotation in the DOM tree
     $('.wisski_anno').ttip_set();
   });
 

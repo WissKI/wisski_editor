@@ -285,6 +285,7 @@ function wisski_editor_init() {
                   'vocabularies' => wisski_editor_build_vocabularies(),
                   'about_url' => $base_root . $base_path . 'wisski/editor/about',
                   'suggest_url' => $base_root . $base_path . 'wisski/editor/suggest',
+                  'showTooltipsForForm' => variable_get('wisski_editor_show_tooltips_for_form', FALSE),
                   ),
               ),
           ),
