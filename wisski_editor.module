@@ -448,12 +448,20 @@ function wisski_editor_freeText_submit($form, $form_state) {
 
   // save the node (make revision)
   node_save($node);
+  
+  global $base_root, $base_path;
 
   // set the subject of the text
   if ($indiv_uri) {
     // a specific individual is given
     // set it now!
     wisski_textproc_set_subject($doc_uri, $indiv_uri);
+
+    // load & save node that links to the text in order to get it indexed
+    $tmpuri = substr($indiv_uri, strlen($base_root . $base_path));
+    $indiv_nid = arg(1, drupal_get_normal_path($tmpuri));
+    $indiv_node = node_load($indiv_nid);
+    node_save($indiv_node);
   } elseif ($group_id) {
     // first occuernce in text of instance of group $group_id will be subject
     // cache the the group id, the subject will be set when triples are created
@@ -462,8 +470,7 @@ function wisski_editor_freeText_submit($form, $form_state) {
   } 
   
   // redirect depending on settings
-  global $base_root, $base_path;
-
+  
   if (variable_get("wisski_editor_storeAfterSave", TRUE)) {
     // go to triple store page
     drupal_goto("$base_root${base_path}node/" . $node->nid . "/rdfa_insert");
