@@ -207,11 +207,11 @@ function wisski_editor_build_vocabularies() {
 
 
 function wisski_editor_form_wisski_vocab_ctrl_admin_edit_alter () {
-  cache_clear_all('wisski_editor_vocabularies'); 
+  cache_clear_all('wisski_editor_vocabularies', 'cache'); 
 }
 
 function wisski_editor_form_wisski_pathbuilder_overview_form_alter () {
-  cache_clear_all('wisski_editor_ontologies');
+  cache_clear_all('wisski_editor_ontologies', 'cache');
 }
 
 
