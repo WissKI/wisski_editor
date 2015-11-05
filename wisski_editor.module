@@ -150,8 +150,21 @@ function wisski_editor_menu() {
 * @author Martin Scholz
 */
 function wisski_editor_build_ontology() {
-  include_once('wisski_editor.inc');
-  return _wisski_editor_build_ontology();
+
+  $data = cache_get('wisski_editor_ontologies');
+
+  if (empty($data->data)) {
+
+    include_once('wisski_editor.inc');
+    $ont = _wisski_editor_build_ontology();
+    cache_set('wisski_editor_ontologies', $ont);
+
+  } else {
+    $ont = $data->data;
+  }
+
+  return $ont;
+  
 }
 
 
@@ -166,21 +179,41 @@ function wisski_editor_build_ontology() {
 * @author Martin Scholz
 */
 function wisski_editor_build_vocabularies() {
-
-  // gather vocabularies
-  $vocs = array();
-  foreach (wisski_vocab_ctrl_get() as $voc) {
-    $vocs[$voc->vid] = array(
-        'vid' => $voc->vid,
-        'name' => $voc->name,
-        'priority' => $voc->priority,
-        'class' => $voc->group_id,  // the groups are ontology classes for the editor
-        );
-  }
   
+  $data = cache_get('wisski_editor_vocabularies');
+
+  if (empty($data->data)) {
+
+    // gather vocabularies
+    $vocs = array();
+    foreach (wisski_vocab_ctrl_get() as $voc) {
+      $vocs[$voc->vid] = array(
+          'vid' => $voc->vid,
+          'name' => $voc->name,
+          'priority' => $voc->priority,
+          'class' => $voc->group_id,  // the groups are ontology classes for the editor
+          );
+    }
+
+    cache_set('wisski_editor_vocabularies', $vocs);
+
+  } else {
+    $vocs = $data->data;
+  }
+
   return $vocs;
 
 };
+
+
+function wisski_editor_form_wisski_vocab_ctrl_admin_edit_alter () {
+  cache_clear_all('wisski_editor_vocabularies'); 
+}
+
+function wisski_editor_form_wisski_pathbuilder_overview_form_alter () {
+  cache_clear_all('wisski_editor_ontologies');
+}
+
 
 
 /**
