@@ -112,10 +112,8 @@
       if (offset < 0) offset = 0;
       var data = {term : text, match_mode : matchMode, offset : offset, limit : limit};
       if (vocabs && vocabs.length != 0) data['vocabs'] = vocabs;
-
-      t.core.setProgressState(1);
-      tinymce.util.XHR.send({
-        context_values : {
+      
+      t.context_values = {
           text : text,
           offset : offset,
           limit : limit,
@@ -124,14 +122,46 @@
           revision : rev,
           current_anno : t.core.current_anno,
           editor : ed
-        },
+        };
+
+      t.core.setProgressState(1);
+/*      tinymce.util.XHR.send({
+/*        context_values : {
+          text : text,
+          offset : offset,
+          limit : limit,
+          vocabs : vocabs,
+          matchMode : matchMode,
+          revision : rev,
+          current_anno : t.core.current_anno,
+          editor : ed
+        },*//*
         url : t.suggest_url,
+//        content_type : "application/x-www-form-urlencoded",
         content_type : "application/json",
         type : "POST",
         data : 'wisski_editor_query=' + tinymce.util.JSON.serialize(data),
         success_scope : t,
         success : t.handleSuggestionsRequest,
         error : function( type, req, o ) {
+          if (req.status != 200) {
+            t.core.setProgressState(0);
+            t.core.db.warn("requestSuggestions: Ajax call not successful.");
+            t.core.db.log("Type: ",type);
+            t.core.db.log("Status: " + req.status + ' ' + req.statusText);
+          }
+          // show menu nonetheless (we have the new entry items etc!)
+          t.handleSuggestionsRequest("", req, o);
+        }
+      });*/
+      $.ajax({
+        url : t.suggest_url,
+        content_type : "application/json",
+        type : "POST",
+        data : 'wisski_editor_query=' + tinymce.util.JSON.serialize(data),
+        success : t.handleSuggestionsRequest,
+        error : function( type, req, o ) {
+          var t = tinymce.activeEditor.plugins.wisskimenu;
           if (req.status != 200) {
             t.core.setProgressState(0);
             t.core.db.warn("requestSuggestions: Ajax call not successful.");
@@ -152,7 +182,8 @@
       var t = tinymce.activeEditor.plugins.wisskimenu, cm = tinymce.activeEditor.controlManager;
       t.core.setProgressState(0);
       data = tinymce.util.JSON.parse(data);
-      var context = send_data.context_values;
+//      var context = send_data.context_values;
+      var context = t.context_values;
 //      if (send_data.revision != t.revision) return; // with current_anno, revision should be superfluous
       if (context.current_anno != t.core.current_anno) return; // cursor moved on (maybe it left an anno so cursor change didn't generate new request and revision is equal!)
       
